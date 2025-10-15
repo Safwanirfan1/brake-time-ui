@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({Key? key}) : super(key: key);
@@ -7,44 +10,35 @@ class IntroScreen extends StatefulWidget {
   State<IntroScreen> createState() => _IntroScreenState();
 }
 
-class _IntroScreenState extends State<IntroScreen>
-    with SingleTickerProviderStateMixin {
+class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _expandAnim; // 0 -> 1 over 1.5s
-  late final Animation<double> _morphAnim; // 0 -> 1 over 1s
+  late final Animation<double> _moveLeft; // 0..1
+  late final Animation<double> _textFade; // 0..1
+  late final Animation<double> _typeProgress; // 0..1
+  late final Animation<double> _bgFade; // background switch to white
 
-  static const Color darkGreen = Color(0xFF006400);
-  static const Color lightGreen = Color(0xFF32CD32);
-
-  // sizing
-  static const double _fontSize = 96.0;
-  static const double _targetSpacing = 140.0; // final spacing between B and T
+  static const Color accent = Color(0xFF00C853);
+  final String _title = 'Brake Time';
 
   @override
   void initState() {
     super.initState();
-    // total 3.0 seconds: 1.5s expand, 1.0s morph, 0.5s hold
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
 
-    _expandAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeInOut), // 1.5s
-    );
-
-    _morphAnim = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.5, 0.8333333, curve: Curves.easeInOut), // 1s
-    );
+    // Start: 0-1000ms idle with logo center. 1000-2000ms move left. text fades+types while moving.
+    _moveLeft = CurvedAnimation(parent: _controller, curve: const Interval(0.33, 0.66, curve: Curves.easeInOut));
+    _textFade = CurvedAnimation(parent: _controller, curve: const Interval(0.53, 0.86, curve: Curves.easeIn));
+    _typeProgress = CurvedAnimation(parent: _controller, curve: const Interval(0.6, 0.95, curve: Curves.easeOut));
+    _bgFade = CurvedAnimation(parent: _controller, curve: const Interval(0.86, 1.0, curve: Curves.easeIn));
 
     _controller.forward();
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        // after hold (included in controller duration), navigate to login
-        Navigator.of(context).pushReplacementNamed('/login');
+    _controller.addStatusListener((s) {
+      if (s == AnimationStatus.completed) {
+        // optional: navigate to login after a short delay
+        Future.delayed(const Duration(milliseconds: 400), () {
+          Navigator.of(context).pushReplacementNamed('/login');
+        });
       }
     });
   }
@@ -55,87 +49,81 @@ class _IntroScreenState extends State<IntroScreen>
     super.dispose();
   }
 
-  double _spacing() {
-    // interpolation for spacing during expand phase
-    return _expandAnim.value * _targetSpacing;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final btOpacity = (1.0 - _morphAnim.value).clamp(0.0, 1.0);
-            final fullOpacity = (_morphAnim.value).clamp(0.0, 1.0);
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final width = MediaQuery.of(context).size.width;
+          // move from center (0) to left offset (-width*0.32)
+          final dx = lerpDouble(0, -width * 0.10, _moveLeft.value) ?? 0;
 
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Image expanding (replaces the BT glyphs)
-                Opacity(
-                  opacity: btOpacity,
-                  child: SizedBox(
-                    width: _fontSize + _spacing(),
-                    height: _fontSize,
-                    child: Center(
-                      child: Container(
-                        // border so the area is visible during debugging
-                        decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300)),
-                        padding: const EdgeInsets.all(4.0),
-                        child: Image.asset(
-                          'assets/logo.png',
-                          width: _fontSize * (0.6 + 0.4 * _expandAnim.value),
-                          height: _fontSize * (0.6 + 0.4 * _expandAnim.value),
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            // show a visible error placeholder when asset can't load
-                            return Container(
-                              width: _fontSize * 0.8,
-                              height: _fontSize * 0.8,
-                              color: Colors.red.shade100,
-                              child: Center(
-                                  child: Text('Image failed to load', style: TextStyle(color: Colors.red.shade900, fontSize: 12))),
-                            );
-                          },
+          final revealCount = (_typeProgress.value * _title.length).clamp(0, _title.length).toInt();
+          final visible = _title.substring(0, revealCount);
+          final hidden = _title.substring(revealCount);
+
+          // background: start dark (#0D0D0D) then fade to white
+          final bgColor = Color.lerp(const Color.fromARGB(255, 255, 255, 255), Colors.white, _bgFade.value)!;
+
+          return Container(
+            color: bgColor,
+            child: SafeArea(
+              child: Stack(
+                children: [
+                  // centered area where logo begins
+                  Positioned.fill(
+                    child: Transform.translate(
+                      offset: Offset(dx, 0),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Logo circle
+                            // Container(
+                            //   width: 72,
+                            //   height: 72,
+                            //   decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                            //   alignment: Alignment.center,
+                            //   child: Text('B', style: GoogleFonts.poppins(fontSize: 36, fontWeight: FontWeight.w600, color: Colors.white)),
+                            // ),
+                            
+  Image.asset(
+    'assets/logo.png', // ← apne logo ka correct path likhein
+    width: 100,        // logo ka size adjust kar sakte ho
+    height: 100,
+    fit: BoxFit.contain,
+  ),
+
+
+                            const SizedBox(width: 18),
+
+                            // text: fades in and types
+                            Opacity(
+                              opacity: _textFade.value,
+                              child: DefaultTextStyle(
+                                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w600, color: accent),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(visible),
+                                    // invisible placeholder to keep width
+                                    Text(hidden, style: TextStyle(color: accent.withOpacity(0))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-
-                // BrakeTime morph/reveal
-                Opacity(
-                  opacity: fullOpacity,
-                  child: RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Brake',
-                          style: TextStyle(
-                            color: darkGreen,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'Time',
-                          style: TextStyle(
-                            color: lightGreen,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

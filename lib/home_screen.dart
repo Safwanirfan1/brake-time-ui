@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               const Center(
                 child: Text(
                   'Choose an option to continue',
@@ -125,6 +125,7 @@ class HomeScreen extends StatelessWidget {
                                       Text('Tracker', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                       SizedBox(height: 6),
                                       Text('Find nearby stores and locations', style: TextStyle(fontSize: 13, color: Color(0xFF777777))),
+                                      Text('coming soon', style: TextStyle(fontSize: 13, color: Color.fromARGB(255, 31, 30, 30))),
                                     ],
                                   ),
                                 ),

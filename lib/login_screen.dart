@@ -31,17 +31,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'BT',
-                    style: TextStyle(
-                      fontSize: 96,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF006400),
-                    ),
-                  ),
+                  // const Text(
+                  //   'BT',
+                  //   style: TextStyle(
+                  //     fontSize: 96,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: Color(0xFF006400),
+                  //   ),
+                  // ),
+                  Image.asset(
+                       'assets/logo.png', // ← yahan apne logo ka path likhein
+                          width: 120,        // aap apne design ke hisab se size adjust kar sakte hain
+                          height: 120,
+                        ),
+
                   const SizedBox(height: 0),
-                  const Text('BrakeTime', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold,color: Color.fromARGB(255, 11, 150, 11),)),
+                   const Text('BrakeTime', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold,color: Color.fromARGB(255, 11, 150, 11),)),
                   const SizedBox(height: 32),
+                  
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
