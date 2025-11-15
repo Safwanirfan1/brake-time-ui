@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+// using system fonts (no google_fonts) — keep styles simple
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({Key? key}) : super(key: key);
@@ -80,40 +80,42 @@ class _IntroScreenState extends State<IntroScreen> with SingleTickerProviderStat
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Logo circle
-                            // Container(
-                            //   width: 72,
-                            //   height: 72,
-                            //   decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                            //   alignment: Alignment.center,
-                            //   child: Text('B', style: GoogleFonts.poppins(fontSize: 36, fontWeight: FontWeight.w600, color: Colors.white)),
-                            // ),
+                           
                             
-  Image.asset(
-    'assets/logo.png', // ← apne logo ka correct path likhein
-    width: 100,        // logo ka size adjust kar sakte ho
-    height: 100,
-    fit: BoxFit.contain,
-  ),
+                            Image.asset(
+                              'assets/logo.png', // ← apne logo ka correct path likhein
+                              width: 60,        // logo ka size adjust kar sakte ho
+                              height: 60,
+                              fit: BoxFit.contain,
+                            ),
 
 
                             const SizedBox(width: 18),
-
-                            // text: fades in and types
                             Opacity(
-                              opacity: _textFade.value,
-                              child: DefaultTextStyle(
-                                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.w600, color: accent),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(visible),
-                                    // invisible placeholder to keep width
-                                    Text(hidden, style: TextStyle(color: accent.withOpacity(0))),
-                                  ],
-                                ),
-                              ),
+                             opacity: _textFade.value,
+                              child: RichText(
+                               text: TextSpan(
+                                  style: const TextStyle(
+                                   fontSize: 40,
+                                   fontWeight: FontWeight.w600,
+                                   ),
+                             children: [
+                                   TextSpan(
+                                     text: visible.contains('Brake')
+                                      ? visible.substring(0, visible.indexOf('Brake') + 5)
+                                     : visible,
+                                       style: const TextStyle(color: Color(0xFF006400)), // Dark green for 'Brake'
+                                  ),
+                           if (visible.length > 5)
+                               TextSpan(
+                                   text: visible.substring(5),
+                             style: const TextStyle(color: Color(0xFF00C853)), // Light green for 'Time'
+                      ),
+                             ],
                             ),
+                            ),
+                           ),
+
                           ],
                         ),
                       ),

@@ -34,7 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.0.0
+  # google_fonts removed per user preference — using system fonts instead
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +61,7 @@ flutter:
   # Register the app image used by the intro animation
   assets:
     - assets/logo.png
+    - assets/logo2.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -92,3 +93,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  
+
